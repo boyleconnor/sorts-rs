@@ -13,20 +13,30 @@ fn quick_sort<T: PartialOrd + Clone + Display + Debug>(list: &mut [T]) {
         // FIXME: This is a bad way to pick the pivot
         let pivot = list[0].clone();
 
-        let mut pivot_index = 0;
+        let mut pivot_start = 0;
+        let mut pivot_end = 0;
         for scanner in 0..list.len() {
             if list[scanner] < pivot {
-                let x = list[scanner].clone();
-                list[scanner] = list[pivot_index].clone();
-                list[pivot_index] = x;
+                let x = list[pivot_start].clone();
+                list[pivot_start] = list[scanner].clone();
+                list[scanner] = list[pivot_end].clone();
+                list[pivot_end] = x;
 
-                pivot_index += 1;
+                pivot_start += 1;
+                pivot_end += 1;
+            } else if list[scanner] == pivot {
+                let x = list[scanner].clone();
+                list[scanner] = list[pivot_end].clone();
+                list[pivot_end] = x;
+
+                pivot_end += 1;
             }
         }
 
-        let (first_half, second_half) = list.split_at_mut(pivot_index);
+        let (first_half, partition_and_second_half) = list.split_at_mut(pivot_start);
+        let (_partition, second_half) = partition_and_second_half.split_at_mut(pivot_end - pivot_start);
         quick_sort(first_half);
-        quick_sort(&mut second_half[1..]);
+        quick_sort(second_half);
     }
 }
 
