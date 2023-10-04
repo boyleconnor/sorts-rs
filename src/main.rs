@@ -42,7 +42,6 @@ fn quick_sort<T: PartialOrd + Clone + Display + Debug>(list: &mut [T]) {
 
 fn main() {
     let mut rng = rand::thread_rng();
-    // FIXME: Quicksort is very slow on narrow ranges (e.g. upper=100)
     let mut list = random_range(&mut rng, 500_000, 0, 100);
 
     let start = Instant::now();
