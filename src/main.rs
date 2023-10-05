@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::thread;
 use rand::Rng;
 use rand::rngs::ThreadRng;
 use tokio::time::Instant;
@@ -7,7 +7,45 @@ fn random_range(rng: &mut ThreadRng, n: usize, lower: usize, upper: usize) -> Ve
     (0..n).map(|_| rng.gen_range(lower..upper)).collect::<Vec<usize>>()
 }
 
-fn quick_sort<T: PartialOrd + Clone + Display + Debug>(list: &mut [T]) {
+fn thread_quick_sort<T: PartialOrd + Clone + Send>(list: &mut [T], num_threads: u8) {
+    if list.len() > 1 {
+        let pivot = list[0].clone();
+
+        let (pivot_start, pivot_end) = wide_lomuto_partition(list, pivot);
+
+        let (first_half, partition_and_second_half) = list.split_at_mut(pivot_start);
+        let (_partition, second_half) = partition_and_second_half.split_at_mut(pivot_end - pivot_start);
+
+        if num_threads > 1 {
+            let left_num_theads = num_threads / 2;
+            thread::scope(|s| {
+                s.spawn(|| { thread_quick_sort(first_half, left_num_theads); });
+                thread_quick_sort(second_half, num_threads - left_num_theads);
+            });
+        } else {
+            quick_sort(first_half);
+            quick_sort(second_half);
+        }
+    }
+}
+
+fn rayon_quick_sort<T: PartialOrd + Clone + Send>(list: &mut [T]) {
+    if list.len() > 1 {
+        let pivot = list[0].clone();
+
+        let (pivot_start, pivot_end) = wide_lomuto_partition(list, pivot);
+
+        let (first_half, partition_and_second_half) = list.split_at_mut(pivot_start);
+        let (_partition, second_half) = partition_and_second_half.split_at_mut(pivot_end - pivot_start);
+
+        rayon::join(
+            || { rayon_quick_sort(first_half); },
+            || { rayon_quick_sort(second_half); }
+        );
+    }
+}
+
+fn quick_sort<T: PartialOrd + Clone>(list: &mut [T]) {
     if list.len() > 1 {
         // Partition:
         // FIXME: This is a bad way to pick the pivot
@@ -22,7 +60,7 @@ fn quick_sort<T: PartialOrd + Clone + Display + Debug>(list: &mut [T]) {
     }
 }
 
-fn wide_lomuto_partition<T: PartialOrd + Clone + Display + Debug>(list: &mut [T], pivot: T) -> (usize, usize) {
+fn wide_lomuto_partition<T: PartialOrd + Clone>(list: &mut [T], pivot: T) -> (usize, usize) {
     let mut pivot_start = 0;
     let mut pivot_end = 0;
     for scanner in 0..list.len() {
@@ -47,12 +85,22 @@ fn wide_lomuto_partition<T: PartialOrd + Clone + Display + Debug>(list: &mut [T]
 
 fn main() {
     let mut rng = rand::thread_rng();
-    let mut list = random_range(&mut rng, 500_000, 0, 100);
+    let list = random_range(&mut rng, 5_000_000, 0, 5_000_000);
 
+    let mut rayon_list = list.clone();
     let start = Instant::now();
-    quick_sort(&mut list);
-    println!("Completed quick sort in: {:?}", start.elapsed());
+    rayon_quick_sort(&mut rayon_list);
+    println!("Completed rayon quick sort in: {:?}", start.elapsed());
 
+    let mut thread_list = list.clone();
+    let start = Instant::now();
+    thread_quick_sort(&mut thread_list, 24);
+    println!("Completed thread quick sort in: {:?}", start.elapsed());
+
+    let mut serial_list = list.clone();
+    let start = Instant::now();
+    quick_sort(&mut serial_list);
+    println!("Completed serial quick sort in: {:?}", start.elapsed());
 }
 
 #[test]
