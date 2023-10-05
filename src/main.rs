@@ -1,4 +1,4 @@
-use std::thread;
+use std::{cmp, thread};
 use rand::Rng;
 use rand::rngs::ThreadRng;
 use tokio::time::Instant;
@@ -17,10 +17,11 @@ fn thread_quick_sort<T: PartialOrd + Clone + Send>(list: &mut [T], num_threads: 
         let (_partition, second_half) = partition_and_second_half.split_at_mut(pivot_end - pivot_start);
 
         if num_threads > 1 {
-            let left_num_theads = num_threads / 2;
+            let left_share = (first_half.len() as f64 / (first_half.len() + second_half.len()) as f64) * num_threads as f64;
+            let left_num_threads = cmp::max(cmp::min(left_share.round() as u8, num_threads - 1), 1);
             thread::scope(|s| {
-                s.spawn(|| { thread_quick_sort(first_half, left_num_theads); });
-                thread_quick_sort(second_half, num_threads - left_num_theads);
+                s.spawn(|| { thread_quick_sort(first_half, left_num_threads); });
+                thread_quick_sort(second_half, num_threads - left_num_threads);
             });
         } else {
             quick_sort(first_half);
