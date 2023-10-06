@@ -84,25 +84,25 @@ fn wide_lomuto_partition<T: PartialOrd + Clone>(list: &mut [T], pivot: T) -> (us
     (pivot_start, pivot_end)
 }
 
-fn heapify<T: PartialOrd + Ord + Clone>(list: &mut [T]) {
-    // TODO: This makes min-heaps; generalize to either comparator
+fn max_heapify<T: PartialOrd + Ord + Clone>(list: &mut [T]) {
+    // TODO: This makes max-heaps; generalize to either comparator
     for x in 0..list.len() {
         let mut i = list.len() - x - 1;
         let (mut left_child, mut right_child) = (2 * i + 1, 2 * i + 2);
         while right_child < list.len() {
-            let lesser_child = cmp::min_by_key(
+            let greater_child = cmp::max_by_key(
                 left_child, right_child, |&child| list[child].clone());
-            if list[lesser_child] < list[i] {
+            if list[greater_child] > list[i] {
                 let swap = list[i].clone();
-                list[i] = list[lesser_child].clone();
-                list[lesser_child] = swap;
-                i = lesser_child;
+                list[i] = list[greater_child].clone();
+                list[greater_child] = swap;
+                i = greater_child;
                 (left_child, right_child) = (2 * i + 1, 2 * i + 2);
             } else {
                 break;
             }
         }
-        if left_child < list.len() && list[left_child] < list[i] {
+        if left_child < list.len() && list[left_child] > list[i] {
             let swap = list[i].clone();
             list[i] = list[left_child].clone();
             list[left_child] = swap;
@@ -154,10 +154,10 @@ fn test_thread_quicksort() {
 #[test]
 fn test_heapify() {
     let mut list = vec![23, 8, 9, 10, 17, 10, 12, 12, 12, 0, 34, 12, 15, 13, 10, 9, 9, 2, 9, 10];
-    heapify(&mut list);
+    max_heapify(&mut list);
     for i in 0..list.len() {
         let (left_child, right_child) = (2 * i + 1, 2 * i + 2);
-        assert!(left_child >= list.len() || list[i] <= list[left_child]);
-        assert!(right_child >= list.len() || list[i] <= list[right_child]);
+        assert!(left_child >= list.len() || list[i] >= list[left_child]);
+        assert!(right_child >= list.len() || list[i] >= list[right_child]);
     }
 }
