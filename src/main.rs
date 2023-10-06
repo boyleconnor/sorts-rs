@@ -84,6 +84,32 @@ fn wide_lomuto_partition<T: PartialOrd + Clone>(list: &mut [T], pivot: T) -> (us
     (pivot_start, pivot_end)
 }
 
+fn heapify<T: PartialOrd + Ord + Clone>(list: &mut [T]) {
+    // TODO: This makes min-heaps; generalize to either comparator
+    for x in 0..list.len() {
+        let mut i = list.len() - x - 1;
+        let (mut left_child, mut right_child) = (2 * i + 1, 2 * i + 2);
+        while right_child < list.len() {
+            let lesser_child = cmp::min_by_key(
+                left_child, right_child, |&child| list[child].clone());
+            if list[lesser_child] < list[i] {
+                let swap = list[i].clone();
+                list[i] = list[lesser_child].clone();
+                list[lesser_child] = swap;
+                i = lesser_child;
+                (left_child, right_child) = (2 * i + 1, 2 * i + 2);
+            } else {
+                break;
+            }
+        }
+        if left_child < list.len() && list[left_child] < list[i] {
+            let swap = list[i].clone();
+            list[i] = list[left_child].clone();
+            list[left_child] = swap;
+        }
+    }
+}
+
 fn main() {
     let mut rng = rand::thread_rng();
     let list = random_range(&mut rng, 5_000_000, 0, 5_000_000);
