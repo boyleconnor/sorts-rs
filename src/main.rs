@@ -87,26 +87,47 @@ fn wide_lomuto_partition<T: PartialOrd + Clone>(list: &mut [T], pivot: T) -> (us
 fn max_heapify<T: PartialOrd + Ord + Clone>(list: &mut [T]) {
     // TODO: This makes max-heaps; generalize to either comparator
     for x in 0..list.len() {
-        let mut i = list.len() - x - 1;
-        let (mut left_child, mut right_child) = (2 * i + 1, 2 * i + 2);
-        while right_child < list.len() {
-            let greater_child = cmp::max_by_key(
-                left_child, right_child, |&child| list[child].clone());
-            if list[greater_child] > list[i] {
-                let swap = list[i].clone();
-                list[i] = list[greater_child].clone();
-                list[greater_child] = swap;
-                i = greater_child;
-                (left_child, right_child) = (2 * i + 1, 2 * i + 2);
-            } else {
-                break;
-            }
-        }
-        if left_child < list.len() && list[left_child] > list[i] {
+        let heap_start = list.len() - x - 1;
+        sift_down(list, heap_start);
+    }
+}
+
+fn sift_down<T: PartialOrd + Ord + Clone>(list: &mut [T], x: usize) {
+    // TODO: See TODO on max-heapify
+    let mut i = x;
+    let (mut left_child, mut right_child) = (2 * i + 1, 2 * i + 2);
+    while right_child < list.len() {
+        let greater_child = cmp::max_by_key(
+            left_child, right_child, |&child| list[child].clone());
+        if list[greater_child] > list[i] {
             let swap = list[i].clone();
-            list[i] = list[left_child].clone();
-            list[left_child] = swap;
+            list[i] = list[greater_child].clone();
+            list[greater_child] = swap;
+            i = greater_child;
+            (left_child, right_child) = (2 * i + 1, 2 * i + 2);
+        } else {
+            break;
         }
+    }
+    if left_child < list.len() && list[left_child] > list[i] {
+        let swap = list[i].clone();
+        list[i] = list[left_child].clone();
+        list[left_child] = swap;
+    }
+}
+
+fn heap_sort<T: PartialOrd + Ord + Clone>(list: &mut [T]) {
+    max_heapify(list);
+    let mut heap_length = list.len();
+    while heap_length > 1 {
+        heap_length -= 1;
+
+        let x = list[0].clone();
+        list[0] = list[heap_length].clone();
+        list[heap_length] = x;
+
+        let (heap, _sorted_list) = list.split_at_mut(heap_length);
+        sift_down(heap, 0);
     }
 }
 
@@ -128,6 +149,11 @@ fn main() {
     let start = Instant::now();
     quick_sort(&mut serial_list);
     println!("Completed serial quick sort in: {:?}", start.elapsed());
+
+    let mut heapsort_list = list.clone();
+    let start = Instant::now();
+    heap_sort(&mut heapsort_list);
+    println!("Completed heap sort in: {:?}", start.elapsed());
 }
 
 #[test]
