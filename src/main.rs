@@ -150,3 +150,14 @@ fn test_thread_quicksort() {
     thread_quick_sort(&mut list, 24);
     assert_eq!(list, vec![7, 8, 8, 8, 9, 10, 13, 13, 13, 13, 13, 13, 14, 18, 20, 20, 21, 23]);
 }
+
+#[test]
+fn test_heapify() {
+    let mut list = vec![23, 8, 9, 10, 17, 10, 12, 12, 12, 0, 34, 12, 15, 13, 10, 9, 9, 2, 9, 10];
+    heapify(&mut list);
+    for i in 0..list.len() {
+        let (left_child, right_child) = (2 * i + 1, 2 * i + 2);
+        assert!(left_child >= list.len() || list[i] <= list[left_child]);
+        assert!(right_child >= list.len() || list[i] <= list[right_child]);
+    }
+}
