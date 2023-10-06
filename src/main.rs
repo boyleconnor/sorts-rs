@@ -110,3 +110,17 @@ fn test_quicksort() {
     quick_sort(&mut list);
     assert_eq!(list, vec![7, 8, 8, 8, 9, 10, 13, 13, 13, 13, 13, 13, 14, 18, 20, 20, 21, 23]);
 }
+
+#[test]
+fn test_rayon_quicksort() {
+    let mut list = vec![23, 10, 18, 14, 20, 20, 13, 13, 13, 13, 13, 13, 21, 9, 7, 8, 8, 8];
+    rayon_quick_sort(&mut list);
+    assert_eq!(list, vec![7, 8, 8, 8, 9, 10, 13, 13, 13, 13, 13, 13, 14, 18, 20, 20, 21, 23]);
+}
+
+#[test]
+fn test_thread_quicksort() {
+    let mut list = vec![23, 10, 18, 14, 20, 20, 13, 13, 13, 13, 13, 13, 21, 9, 7, 8, 8, 8];
+    thread_quick_sort(&mut list, 24);
+    assert_eq!(list, vec![7, 8, 8, 8, 9, 10, 13, 13, 13, 13, 13, 13, 14, 18, 20, 20, 21, 23]);
+}
