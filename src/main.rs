@@ -187,3 +187,10 @@ fn test_heapify() {
         assert!(right_child >= list.len() || list[i] >= list[right_child]);
     }
 }
+
+#[test]
+fn test_heapsort() {
+    let mut list = vec![23, 10, 18, 14, 20, 20, 13, 13, 13, 13, 13, 13, 21, 9, 7, 8, 8, 8];
+    heap_sort(&mut list);
+    assert_eq!(list, vec![7, 8, 8, 8, 9, 10, 13, 13, 13, 13, 13, 13, 14, 18, 20, 20, 21, 23]);
+}
